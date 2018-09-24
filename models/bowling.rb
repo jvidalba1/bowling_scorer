@@ -1,55 +1,55 @@
-require './game.rb'
+require './models/game.rb'
 
 class Bowling
-  attr_accessor :chances, :name, :pinfalls, :scores
+  attr_accessor :games, :chances, :name, :pinfalls, :scores
 
   def initialize(name, chances)
     @name = name
     @chances = chances
     @pinfalls = []
     @scores = []
+    @games = []
   end
 
   def play
-    games = []
     games_by_frame(@chances).each do |frame|
       game = Game.new(frame)
       parse_pinfalls(game)
-      games << game
+      @games << game
     end
-    result(games)
-  end
-
-  def result(games)
-    games.each_with_index do |game, index|
-      sum = if game.tenth?
-        (@scores.last || 0 ) + game.score
-      elsif game.strike?
-        if games[index+1].strike?
-          if games[index+2].strike?
-            (@scores.last || 0 ) + 30
-          elsif games[index+2].spare?
-            (@scores.last || 0 ) + 20 + games[index+2].frame.first.to_i
-          else
-            (@scores.last || 0 ) + 20 + games[index+2].frame[0].to_i
-          end
-        elsif games[index+1].spare?
-          (@scores.last || 0 ) + 20
-        elsif games[index+1].tenth?
-          (@scores.last || 0 ) + 10 + games[index+1].frame[0].to_i + games[index+1].frame[1].to_i
-        else
-          (@scores.last || 0 ) + 10 + games[index+1].score
-        end
-      elsif game.spare?
-        (@scores.last || 0 ) + 10 + games[index+1].frame[0].to_i
-      else
-        (@scores.last || 0 ) + game.score
-      end
-      @scores << sum
-    end
+    result
   end
 
   private
+
+    def result
+      @games.each_with_index do |game, index|
+        sum = if game.tenth?
+          (@scores.last || 0 ) + game.score
+        elsif game.strike?
+          if @games[index+1].strike?
+            if @games[index+2].strike?
+              (@scores.last || 0 ) + 30
+            elsif @games[index+2].spare?
+              (@scores.last || 0 ) + 20 + @games[index+2].frame.first.to_i
+            else
+              (@scores.last || 0 ) + 20 + @games[index+2].frame[0].to_i
+            end
+          elsif @games[index+1].spare?
+            (@scores.last || 0 ) + 20
+          elsif @games[index+1].tenth?
+            (@scores.last || 0 ) + 10 + @games[index+1].frame[0].to_i + @games[index+1].frame[1].to_i
+          else
+            (@scores.last || 0 ) + 10 + @games[index+1].score
+          end
+        elsif game.spare?
+          (@scores.last || 0 ) + 10 + @games[index+1].frame[0].to_i
+        else
+          (@scores.last || 0 ) + game.score
+        end
+        @scores << sum
+      end
+    end
 
     def games_by_frame(games)
       pinsfall_by_frame = []
@@ -70,11 +70,11 @@ class Bowling
     end
 
     def parse_pinfalls(game)
-      if game.kind == "strike"
+      if game.strike?
         @pinfalls << ["X"]
-      elsif game.kind == "spare"
+      elsif game.spare?
         @pinfalls << [game.frame.first, "/"]
-      elsif game.kind == "tenth"
+      elsif game.tenth?
         @pinfalls << game.frame.map { |chance| chance == "10" ? "X" : chance }
       else
         @pinfalls << game.frame

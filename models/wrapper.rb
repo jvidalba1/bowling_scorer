@@ -1,7 +1,7 @@
 require 'byebug'
-require './reader.rb'
-require './bowling.rb'
-require './printer.rb'
+require './models/reader.rb'
+require './models/bowling.rb'
+require './models/printer.rb'
 
 class Wrapper
   attr_accessor :url_file, :match
